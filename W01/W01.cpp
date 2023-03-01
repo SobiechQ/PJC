@@ -8,5 +8,10 @@ using namespace std;
 
 int main() {
     cout << "1.1" << endl;
+
+
+
+
+    //return nie jest obowiązkowy.
     return 0;
 }
