@@ -6,4 +6,5 @@ set(CMAKE_CXX_STANDARD 20)
 add_executable(m W03/main.cpp)
 add_executable(w03z01 W03/z01/main.cpp)
 add_executable(w03z02 W03/z02/main.cpp)
+add_executable(w04z W04/main.cpp)
 
