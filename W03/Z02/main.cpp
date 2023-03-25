@@ -96,9 +96,9 @@ int main() {
 
 
     auto ints = std::vector<int>();
-    std::cout <<" \t Przed: "<< ints.size() << '\n';
+    cout <<" \t Przed: "<< ints.size() << '\n';
     addElement(ints);
-    std::cout <<" \t Po: "<< ints.size() << '\n';
+    cout <<" \t Po: "<< ints.size() << '\n';
     vector<double>dane[2];
     dane[0]={0,1,2,3,4,5};
     dane[1]={0,1,2,3,4,5,6,7,8,9,0};
