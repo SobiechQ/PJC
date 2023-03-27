@@ -16,5 +16,7 @@ add_executable(w03z01 W03/z01/main.cpp)
 add_executable(w03z02 W03/z02/main.cpp)
 add_executable(w04z W04/main.cpp)
 add_executable(w04z01 W04/Z01/main.cpp)
+add_executable(w04z02 W04/Z02/main.cpp)
 target_link_libraries(w04z01 fmt)
+target_link_libraries(w04z02 fmt)
 

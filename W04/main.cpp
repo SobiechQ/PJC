@@ -47,7 +47,7 @@ int main() {
         cout << item << ", ";
     }
      */
-    /*
+
     //mapa
     auto text = std::string("ale ma kota");
     auto occurences = std::map<char, int>(); //mapa ma unikalne klucze i jest posortowana po kluczach.
@@ -75,7 +75,7 @@ int main() {
 //        //dac dowolna rzecz, dobra praktyka jest danie zmiennej ktora na pewno bie bedzie uzywana poza petla
 //
 //    }
-     */
+
 
 
 
