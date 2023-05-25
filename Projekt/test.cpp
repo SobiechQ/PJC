@@ -4,10 +4,12 @@
 #include <iostream>
 #include <fmt/printf.h>
 #include "myCrypt.cpp"
+#include "vaultRecord.cpp"
+#include "enum.h"
 int main() {
     using namespace std;
-    enc2("hello", "there");
-
+    VaultRecord vaultRecord = VaultRecord("jan", "dzban", Category::IMPORTANT);
+    fmt::print("{}", vaultRecord.toCsv());
 
 
 
