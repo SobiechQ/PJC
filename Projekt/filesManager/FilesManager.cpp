@@ -4,6 +4,7 @@
 
 #include <string>
 #include <optional>
+#include <regex>
 #include "FilesManager.h"
 #include "fmt/printf.h"
 
@@ -65,6 +66,41 @@ auto FilesManager::close() -> void {
 auto FilesManager::flush() -> void {
     this->save();
     this->close();
+}
+auto split(const string& message, const string& reg) -> vector<string> {
+    vector<string> elems;
+    regex re(reg);
+    sregex_token_iterator iter(message.begin(), message.end(), re, -1);
+    sregex_token_iterator end;
+    while (iter != end) {
+        if (iter->length()) {
+            elems.push_back(*iter);
+        }
+        ++iter;
+    }
+    return elems;
+}
+
+auto FilesManager::read() -> File {
+    if (!this->isFileSet())
+        throw logic_error("Set file before reading from file");
+    ifstream file(this->getCurrentFile()->value().getLocation());
+    if (!file)
+        throw std::ios_base::failure("Failed to open the file for reading");
+
+    string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    file.close();
+    vector<string> records = split(content, "\r\n");
+    records.erase(records.begin());
+    /*todo, każda linia split po ','
+     * objecty rekordów dodawane do vectora w File.
+     */
+
+
+
+
+    return File("abc");
+
 }
 
 

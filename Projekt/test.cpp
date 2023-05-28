@@ -19,15 +19,17 @@ int main() {
     } catch (const std::ios_base::failure& ex) {
         std::cerr << "Exception caught: " << ex.what() << '\n';
     }
-    fmt::print("{}", FilesManager::getInstance()->isFileSet());
     FilesManager::getInstance()->setCurrentFile("C:\\Users\\mikol\\Documents\\PJC\\Projekt\\passwd\\test1.pass");
-    fmt::print("{}", FilesManager::getInstance()->isFileSet());
     FilesManager::getInstance()
         ->getCurrentFile()
         ->value()
         .setRecords(records);
     FilesManager::getInstance()
-        ->flush();
+        ->save();
+    fmt::print("{}\n", FilesManager::getInstance()->isFileSet());
+    FilesManager::getInstance()->read();
+
+
 
 
 

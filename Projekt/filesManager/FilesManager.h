@@ -51,6 +51,8 @@ public:
      * Save and close.
      */
     auto flush() -> void;
+    auto read() -> File;
+    //todo metoda której jedynym zadaniem jest aktualizacja godziny w pliku
     auto getCurrentFile() -> optional<File> * {
         return &this->currentFile;
     }
