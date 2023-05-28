@@ -1,18 +1,5 @@
 #include <string>
 #include <fmt/printf.h>
-#include <map>
-#include <vector>
-#include <random>
-
-//
-// Created by mikol on 18.05.2023.
-//
-//todo javadoc
-/**
- * @param value
- * @param key
- * @return
- */
 auto enc2(std::string value, std::string key) -> std::string {
     using namespace std;
     string addingKey = string();

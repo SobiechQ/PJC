@@ -1,12 +1,21 @@
 //
+// Created by mikol on 28.05.2023.
+//
+
+#ifndef PJC2_VAULTRECORD_H
+#define PJC2_VAULTRECORD_H
+
+#endif //PJC2_VAULTRECORD_H
+//
 // Created by mikol on 25.05.2023.
 //
 //#include "enum.h"
 #include <iostream>
 #include <optional>
-#include "enum.h"
+#include <vector>
 
-BETTER_ENUM(Category, int, LOGIN, MEMO, IMPORTANT, WORK)
+
+
 
 using namespace std;
 
@@ -14,19 +23,12 @@ class VaultRecord {
 private:
     string name;
     string password;
-    Category category;
+    string category;
     optional<std::string> webAddress;
     optional<std::string> login;
 public:
-    VaultRecord(const string &name, const string &password, const Category &category) : name(name), password(password),
-                                                                                        category(category) {
-        this->name = name;
-        this->password = password;
-        this->category = category;
-        this->webAddress = optional<std::string>();
-        this->login = optional<std::string>();
-    }
-
+    VaultRecord(const string &name, const string &password, const string &category) : name(name), password(password),
+                                                                                      category(category) {}
     auto setWebAddress(const std::string &webAddress) -> void {
         this->webAddress.swap((optional<basic_string<char>> &) webAddress);
     }
@@ -38,8 +40,7 @@ public:
     auto toString() -> std::string {
         std::string output = "Name: " + this->name + "\n";
         output += "Password: " + this->password + "\n";
-        output += "Category: ";
-        output += this->category._to_string();
+        output += "Category: " + this->category + "\n";
         output += '\n';
         if (this->webAddress.has_value())
             output += "Web Address: " + this->webAddress.value() + "\n";
@@ -49,10 +50,10 @@ public:
     }
 
     auto toCsv() -> std::string {
-        std::string output = "name,password,category,webAddress,login\r\n";
+        std::string output;
         output += this->name + ',';
         output += this->password + ',';
-        output += this->category._to_string();
+        output += this->category;
         output += ',';
         output += this->webAddress.value_or("NULL"); //todo protect so that web address cant be set as null.
         output += ',';
@@ -62,4 +63,5 @@ public:
     }
 
 };
+
 
