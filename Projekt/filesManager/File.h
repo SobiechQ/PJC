@@ -17,10 +17,9 @@ private:
     vector<VaultRecord> records;
 public:
     File(const string &fileLocation);
-    auto getLocation() -> string {
-        return this->fileLocation;
-    }
-
+    auto getLocation() -> string;
+    const vector<VaultRecord> &getRecords() const;
+    void setRecords(const vector<VaultRecord> &records);
 };
 
 

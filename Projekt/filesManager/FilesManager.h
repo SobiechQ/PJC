@@ -42,34 +42,15 @@ public:
      * current file wont change.
      * @return Instancce of currentFile
      */
-    auto createFile(string fileLocation) -> optional<File> * {
-        fileLocation += ".pass";
-        if (this->isFileAlreadyExisting(fileLocation))
-            throw ios_base::failure("File already exists on that location");
-
-        File *file = new File(fileLocation);
-        ofstream fileStream(file->getLocation());
-
-        if (!fileStream) {
-            delete file;
-            throw ios_base::failure("Sailed to save file");
-        }
-
-        //success in creating a file.
-        this->currentFile.emplace(*file);
-        try {
-            this->writeToFile("tes2222");
-        } catch (std::logic_error ex){
-            //technically this should never happen since we just set the pointer
-            //tho its here just in case.
-            throw ios_base::failure(ex.what());
-        }
-
-
-        fileStream.close();
-        return &this->currentFile;
-    }
-
+    auto createFile(string fileLocation) -> optional<File> *;
+    auto setCurrentFile(const string &fileLocation)-> void;
+    auto setCurrentFile(File file) -> void;
+    auto save() -> void;
+    auto close() -> void;
+    /**
+     * Save and close.
+     */
+    auto flush() -> void;
     auto getCurrentFile() -> optional<File> * {
         return &this->currentFile;
     }
@@ -79,7 +60,14 @@ private:
         std::filesystem::path path(filePath);
         return std::filesystem::exists(path) && std::filesystem::is_regular_file(path);
     }
-
+    //todo unhandled errors
+    auto writeToFile(std::vector<VaultRecord> records) -> void {
+        string message = string(this->getCurrentDateTime());
+        message += "\r\n";
+        for (auto &r: records)
+            message += r.toCsv();
+        this->writeToFile(message);
+    }
     auto writeToFile(const string &message) -> void {
         if (!this->isFileSet())
             throw logic_error("unable to write. File is not set.");
@@ -88,6 +76,14 @@ private:
             throw std::ios_base::failure("Failed to open the file for writing.");
         fileStream << message;
         fileStream.close();
+    }
+    std::string getCurrentDateTime() {
+        std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+        std::time_t currentTime = std::chrono::system_clock::to_time_t(now);
+        std::stringstream ss;
+        ss << std::put_time(std::localtime(&currentTime), "%d-%m-%Y %H:%M:%S");
+        std::string dateTimeStr = ss.str();
+        return dateTimeStr;
     }
 
 
