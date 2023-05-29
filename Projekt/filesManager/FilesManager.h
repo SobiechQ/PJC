@@ -42,9 +42,9 @@ public:
      * current file wont change.
      * @return Instancce of currentFile
      */
-    auto createFile(string fileLocation) -> optional<File> *;
-    auto setCurrentFile(const string &fileLocation)-> void;
-    auto setCurrentFile(File file) -> void;
+    auto createFile(string fileLocation) -> FilesManager*;
+    auto setCurrentFile(string fileLocation)-> FilesManager*;
+    auto setCurrentFile(File file) -> FilesManager*;
     auto save() -> void;
     auto close() -> void;
     /**

@@ -5,34 +5,64 @@
 #include <fmt/printf.h>
 #include "myCrypt.cpp"
 #include "filesManager/FilesManager.h"
+#include "filesManager/File.h"
+#include<dos.h>   //for delay()
+#include<conio.h>   //for getch()
+#include <thread>
+
 int main() {
+
     using namespace std;
     auto records = vector<VaultRecord>();
-    records.push_back(VaultRecord("name1", "pass1", "normal"));
-    records.push_back(VaultRecord("name2", "pass2", "normal"));
-    records.push_back(VaultRecord("name3", "pass3", "normal"));
-    records.push_back(VaultRecord("name4", "pass4", "normal"));
-    records.push_back(VaultRecord("name5", "pass5", "normal"));
-
-    try {
-        FilesManager::getInstance()->createFile("C:\\Users\\mikol\\Documents\\PJC\\Projekt\\passwd\\test1");
-    } catch (const std::ios_base::failure& ex) {
-        std::cerr << "Exception caught: " << ex.what() << '\n';
-    }
-    FilesManager::getInstance()->setCurrentFile("C:\\Users\\mikol\\Documents\\PJC\\Projekt\\passwd\\test1.pass");
+    VaultRecord record0 = VaultRecord("0", "a", "normal");
+    record0.setLogin("lorem");
+    record0.setWebAddress("ipsum");
+    records.push_back(record0);
+    records.push_back(VaultRecord("1", "b", "normal"));
+    records.push_back(VaultRecord("2", "c", "normal"));
+    records.push_back(VaultRecord("3", "d", "normal"));
+    records.push_back(VaultRecord("4", "e", "normal"));
+    records[2].setLogin("login");
+    records[2].setWebAddress("web address");
+    records[3].setLogin("efgh");
     FilesManager::getInstance()
+//        ->createFile("C:\\Users\\mikol\\Documents\\PJC\\Projekt\\passwd\\test1")
+        ->setCurrentFile("C:\\Users\\mikol\\Documents\\PJC\\Projekt\\passwd\\test1")
         ->getCurrentFile()
         ->value()
         .setRecords(records);
+
+
     FilesManager::getInstance()
         ->save();
-    fmt::print("{}\n", FilesManager::getInstance()->isFileSet());
-    FilesManager::getInstance()->read();
+    for(auto a: *FilesManager::getInstance()
+            ->getCurrentFile()
+            ->value()
+            .getRecords()){
+        fmt::print("{}", a.toString());
+    }
 
 
+/*
 
+    FilesManager::getInstance()
+            ->setCurrentFile("C:\\Users\\mikol\\Documents\\PJC\\Projekt\\passwd\\test1.pass");
+    FilesManager::getInstance()
+        ->read();
 
-
+    fmt::print("{}", FilesManager::getInstance()
+            ->getCurrentFile()
+            ->value()
+            .getRecords()
+            ->size());
+    for(auto a:
+            *FilesManager::getInstance()
+            ->getCurrentFile()
+            ->value()
+            .getRecords()){
+        fmt::print("{}", a.toString());
+    }
+*/
 
     return 0;
 }

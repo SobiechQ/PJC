@@ -6,14 +6,16 @@
 
 File::File(const string &fileLocation) : fileLocation(fileLocation) {}
 
-const vector<VaultRecord> &File::getRecords() const {
-    return records;
-}
 
-void File::setRecords(const vector<VaultRecord> &records) {
+auto File::setRecords(const vector<VaultRecord> &records) -> File* {
     File::records = records;
+    return this;
 }
 
 auto File::getLocation() -> string {
     return this->fileLocation;
+}
+
+vector<VaultRecord> *File::getRecords() {
+    return &this->records;
 }

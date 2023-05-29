@@ -13,6 +13,7 @@
 #include <iostream>
 #include <optional>
 #include <vector>
+#include <fmt/printf.h>
 
 
 
@@ -24,28 +25,28 @@ private:
     string name;
     string password;
     string category;
-    optional<std::string> webAddress;
     optional<std::string> login;
+    optional<std::string> webAddress;
 public:
     VaultRecord(const string &name, const string &password, const string &category) : name(name), password(password),
                                                                                       category(category) {}
-    auto setWebAddress(const std::string &webAddress) -> void {
-        this->webAddress.swap((optional<basic_string<char>> &) webAddress);
+    auto setWebAddress(std::string webAddress) -> void {
+        this->webAddress = webAddress;
     }
 
-    auto setLogin(const std::string &login) -> void {
-        this->login.swap((optional<basic_string<char>> &) login);
+    auto setLogin(string login) -> void {
+        this->login=login;
     }
 
     auto toString() -> std::string {
         std::string output = "Name: " + this->name + "\n";
         output += "Password: " + this->password + "\n";
         output += "Category: " + this->category + "\n";
-        output += '\n';
-        if (this->webAddress.has_value())
-            output += "Web Address: " + this->webAddress.value() + "\n";
         if (this->login.has_value())
             output += "Login: " + this->login.value() + "\n";
+        if (this->webAddress.has_value())
+            output += "Web Address: " + this->webAddress.value() + "\n";
+        output+='\n';
         return output;
     }
 
@@ -55,9 +56,9 @@ public:
         output += this->password + ',';
         output += this->category;
         output += ',';
-        output += this->webAddress.value_or("NULL"); //todo protect so that web address cant be set as null.
-        output += ',';
         output += this->login.value_or("NULL");
+        output += ',';
+        output += this->webAddress.value_or("NULL"); //todo protect so that web address cant be set as null.
         output += "\r\n";
         return output;
     }

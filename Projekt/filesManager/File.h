@@ -18,8 +18,8 @@ private:
 public:
     File(const string &fileLocation);
     auto getLocation() -> string;
-    const vector<VaultRecord> &getRecords() const;
-    void setRecords(const vector<VaultRecord> &records);
+    vector<VaultRecord>* getRecords();
+    auto setRecords(const vector<VaultRecord> &records) -> File*;
 };
 
 
