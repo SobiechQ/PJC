@@ -7,11 +7,12 @@
 #include <regex>
 #include "FilesManager.h"
 #include "fmt/printf.h"
+#include "C:\Users\mikol\Documents\PJC\Projekt\cipher\myCrypt.h"
 
 using namespace std;
-FilesManager* FilesManager::instance = nullptr;
+FilesManager *FilesManager::instance = nullptr;
 
-auto FilesManager::createFile(string fileLocation) -> FilesManager* {
+auto FilesManager::createFile(string fileLocation) -> FilesManager * {
     fileLocation += ".pass";
     if (this->isFileAlreadyExisting(fileLocation))
         throw ios_base::failure("File already exists on that location");
@@ -38,39 +39,66 @@ auto FilesManager::createFile(string fileLocation) -> FilesManager* {
     return this;
 }
 
-auto FilesManager::setCurrentFile(string fileLocation) -> FilesManager* {
-    fileLocation+=".pass";
+auto FilesManager::setCurrentFile(string fileLocation) -> FilesManager * {
+    fileLocation += ".pass";
     File file = File(fileLocation);
     try {
         this->setCurrentFile(file);
-    } catch (const std::ios_base::failure& ex) {
+    } catch (const std::ios_base::failure &ex) {
         throw ex;
     }
     return this;
 }
 
-auto FilesManager::setCurrentFile(File file) -> FilesManager* {
+auto FilesManager::setCurrentFile(File file) -> FilesManager * {
     if (!this->isFileAlreadyExisting(file.getLocation()))
         throw ios_base::failure("No such file");
     this->currentFile.emplace(file);
     return this;
 }
 
-auto FilesManager::save() -> void {
+auto FilesManager::save() -> FilesManager * {
     if (!this->isFileSet())
         throw new logic_error("Cant save if file isnt chosen");
     this->writeToFile(*this->getCurrentFile()->value().getRecords());
+    return this;
 }
 
-auto FilesManager::close() -> void {
+auto FilesManager::save(const string &key) -> FilesManager * {
+    if (!this->isFileSet())
+        throw new logic_error("Cant save if file isnt chosen");
+    auto encryptedCopy = File(this->getCurrentFile()->value().getLocation());
+    for (auto unEncryptedRecord: *this->getCurrentFile()->value().getRecords()) {
+        auto encryptedRecord = VaultRecord(myEncrypt(unEncryptedRecord.getName(), key),
+                                           myEncrypt(unEncryptedRecord.getPassword(), key),
+                                           myEncrypt(unEncryptedRecord.getCategory(), key)
+        );
+
+        if (unEncryptedRecord.getLogin().has_value())
+            encryptedRecord.setLogin(myEncrypt(unEncryptedRecord.getLogin().value(), key));
+        if (unEncryptedRecord.getWebAddress().has_value())
+            encryptedRecord.setWebAddress(myEncrypt(unEncryptedRecord.getWebAddress().value(), key));
+
+        encryptedCopy.getRecords()
+                ->push_back(encryptedRecord);
+    }
+
+    this->writeToFile(*encryptedCopy.getRecords());
+    return this;
+}
+
+auto FilesManager::close() -> FilesManager * {
     this->getCurrentFile()->reset();
+    return this;
 }
 
-auto FilesManager::flush() -> void {
+auto FilesManager::flush() -> FilesManager * {
     this->save();
     this->close();
+    return this;
 }
-auto split(const string& message, const string& reg) -> vector<string> {
+
+auto split(const string &message, const string &reg) -> vector<string> {
     vector<string> elems;
     regex re(reg);
     sregex_token_iterator iter(message.begin(), message.end(), re, -1);
@@ -95,9 +123,9 @@ auto FilesManager::read() -> File {
     file.close();
     auto records = split(content, "\r\n");
     records.erase(records.begin());
-    for(auto& record: records){
+    for (auto &record: records) {
         auto commaSeparatedValues = split(record, ",");
-        if (commaSeparatedValues.size()!=5)
+        if (commaSeparatedValues.size() != 5)
             throw std::ios_base::failure("File is corrupted, unable to parse comtent");
         auto currentRecord = VaultRecord(
                 commaSeparatedValues[0],
@@ -108,13 +136,35 @@ auto FilesManager::read() -> File {
         if (commaSeparatedValues[4] != "NULL")
             currentRecord.setWebAddress(commaSeparatedValues[4]);
         this->getCurrentFile()
-            ->value()
-            .getRecords()
-            ->push_back(currentRecord);
+                ->value()
+                .getRecords()
+                ->push_back(currentRecord);
     }
     return this->getCurrentFile()->value();
 
 }
+
+auto FilesManager::read(const string &key) -> File {
+    if (!this->isFileSet())
+        throw logic_error("Set file before reading from file");
+
+    auto encryptedFile = this->read();
+    auto decryptedFile = File(this->getCurrentFile()->value().getLocation());
+    for(auto &encryptedRecord: *encryptedFile.getRecords()){
+        auto decryptedRecord = VaultRecord(myDecrypt(encryptedRecord.getName(), key),
+                                           myDecrypt(encryptedRecord.getPassword(), key),
+                                           myDecrypt(encryptedRecord.getCategory(), key));
+        if(encryptedRecord.getLogin().has_value())
+            decryptedRecord.setLogin(myDecrypt(encryptedRecord.getLogin().value(), key));
+        if(encryptedRecord.getWebAddress().has_value())
+            decryptedRecord.setWebAddress(myDecrypt(encryptedRecord.getWebAddress().value(), key));
+        decryptedFile.getRecords()->push_back(decryptedRecord);
+    }
+    this->setCurrentFile(decryptedFile);
+    return decryptedFile;
+}
+
+
 
 
 

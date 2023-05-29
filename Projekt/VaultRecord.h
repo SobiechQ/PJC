@@ -63,6 +63,26 @@ public:
         return output;
     }
 
+    const string &getName() const {
+        return name;
+    }
+
+    const string &getPassword() const {
+        return password;
+    }
+
+    const string &getCategory() const {
+        return category;
+    }
+
+    const optional<std::string> &getLogin() const {
+        return login;
+    }
+
+    const optional<std::string> &getWebAddress() const {
+        return webAddress;
+    }
+
 };
 
 

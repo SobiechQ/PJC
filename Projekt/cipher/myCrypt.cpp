@@ -1,6 +1,7 @@
 #include <string>
 #include <fmt/printf.h>
-auto enc2(std::string value, std::string key) -> std::string {
+#include "myCrypt.h"
+auto myEncrypt(std::string value, std::string key) -> std::string {
     using namespace std;
     string addingKey = string();
     for (int i = key.size(); i < value.size(); i++)
@@ -15,7 +16,7 @@ auto enc2(std::string value, std::string key) -> std::string {
     return value;
 }
 
-auto dec2(std::string valueEncrypted, std::string key) -> std::string {
+auto myDecrypt(std::string valueEncrypted, std::string key) -> std::string {
     using namespace std;
     string addingKey = string();
     for (int i = key.size(); i < valueEncrypted.size(); i++)

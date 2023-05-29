@@ -45,13 +45,15 @@ public:
     auto createFile(string fileLocation) -> FilesManager*;
     auto setCurrentFile(string fileLocation)-> FilesManager*;
     auto setCurrentFile(File file) -> FilesManager*;
-    auto save() -> void;
-    auto close() -> void;
+    auto save() -> FilesManager*;
+    auto save(const string& key) -> FilesManager*;
+    auto close() -> FilesManager*;
     /**
      * Save and close.
      */
-    auto flush() -> void;
+    auto flush() -> FilesManager*;
     auto read() -> File;
+    auto read(const string& key) -> File;
     //todo metoda której jedynym zadaniem jest aktualizacja godziny w pliku
     auto getCurrentFile() -> optional<File> * {
         return &this->currentFile;
