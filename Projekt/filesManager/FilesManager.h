@@ -58,6 +58,7 @@ public:
     auto read() -> File*;
     auto read(const string& key) -> File*;
     auto read(const string& key, function<std::string(std::string v, std::string k)> algorithm) -> File*;
+    auto updateTimestamp() -> FilesManager*;
     //todo metoda której jedynym zadaniem jest aktualizacja godziny w pliku
     auto getCurrentFile() -> optional<File*> * {
         return this->currentFile;
@@ -68,7 +69,6 @@ private:
         std::filesystem::path path(filePath);
         return std::filesystem::exists(path) && std::filesystem::is_regular_file(path);
     }
-    //todo unhandled errors
     auto writeToFile(std::vector<VaultRecord> records) -> void {
         string message = string(this->getCurrentDateTime());
         message += "\r\n";

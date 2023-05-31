@@ -130,6 +130,7 @@ auto FilesManager::read() -> File* {
                 ->getRecords()
                 ->push_back(currentRecord);
     }
+    this->writeToFile(*this->getCurrentFile()->value()->getRecords());
     return this->getCurrentFile()->value();
 }
 
