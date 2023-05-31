@@ -6,11 +6,12 @@
 #include "File.h"
 #include <optional>
 #include <filesystem>
+#include <tr1/functional>
 
 #ifndef PJC2_FILESMANAGER_H
 #define PJC2_FILESMANAGER_H
 
-#endif //PJC2_FILESMANAGER_H
+
 
 using namespace std;
 
@@ -51,14 +52,13 @@ public:
     auto setCurrentFile(File* file) -> FilesManager*;
     auto save() -> FilesManager*;
     auto save(const string& key) -> FilesManager*;
-    auto save(const string &key, function<std::string(std::string v, std::string k)> algorithm) -> FilesManager*;
+    auto save(const string &key, std::function<std::string(std::string v, std::string k)> algorithm) -> FilesManager*;
     auto close() -> FilesManager*;
     static auto split(const string &message, const string &reg) -> vector<string>;
 
     auto read() -> File*;
     auto read(const string& key) -> File*;
-    auto read(const string& key, function<std::string(std::string v, std::string k)> algorithm) -> File*;
-    auto updateTimestamp() -> FilesManager*;
+    auto read(const string& key, std::function<std::string(std::string v, std::string k)> algorithm) -> File*;
     //todo metoda której jedynym zadaniem jest aktualizacja godziny w pliku
     auto getCurrentFile() -> optional<File*> * {
         return this->currentFile;
@@ -99,3 +99,4 @@ public:
     ~FilesManager();
 };
 
+#endif //PJC2_FILESMANAGER_H
