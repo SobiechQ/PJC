@@ -1,6 +1,7 @@
 #include <string>
 #include <fmt/printf.h>
 #include "myCrypt.h"
+
 auto myEncrypt(std::string value, std::string key) -> std::string {
     using namespace std;
     string addingKey = string();

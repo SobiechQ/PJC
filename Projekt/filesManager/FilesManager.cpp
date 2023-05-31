@@ -98,19 +98,6 @@ auto FilesManager::flush() -> FilesManager * {
     return this;
 }
 
-auto split(const string &message, const string &reg) -> vector<string> {
-    vector<string> elems;
-    regex re(reg);
-    sregex_token_iterator iter(message.begin(), message.end(), re, -1);
-    sregex_token_iterator end;
-    while (iter != end) {
-        if (iter->length()) {
-            elems.push_back(*iter);
-        }
-        ++iter;
-    }
-    return elems;
-}
 
 auto FilesManager::read() -> File {
     if (!this->isFileSet())
@@ -162,6 +149,20 @@ auto FilesManager::read(const string &key) -> File {
     }
     this->setCurrentFile(decryptedFile);
     return decryptedFile;
+}
+
+auto FilesManager::split(const string &message, const string &reg) -> vector<string> {
+    vector<string> elems;
+    regex re(reg);
+    sregex_token_iterator iter(message.begin(), message.end(), re, -1);
+    sregex_token_iterator end;
+    while (iter != end) {
+        if (iter->length()) {
+            elems.push_back(*iter);
+        }
+        ++iter;
+    }
+    return elems;
 }
 
 

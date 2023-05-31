@@ -48,6 +48,7 @@ public:
     auto save() -> FilesManager*;
     auto save(const string& key) -> FilesManager*;
     auto close() -> FilesManager*;
+    static auto split(const string &message, const string &reg) -> vector<string>;
     /**
      * Save and close.
      */
