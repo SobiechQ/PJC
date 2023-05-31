@@ -22,7 +22,11 @@ using namespace std;
 class FilesManager {
 private:
     static FilesManager *instance;
-    optional<File> currentFile;
+
+
+
+
+    optional<File*> *currentFile = new std::optional<File*>();
 
     FilesManager() {}
 
@@ -33,7 +37,7 @@ public:
         return FilesManager::instance;
     }
 
-    auto isFileSet() -> bool { return currentFile.has_value(); }
+    auto isFileSet() -> bool { return currentFile->has_value(); }
 
     /**
      * Creates new .pass file on drive, and sets the optional<File> currentFile as that file.
@@ -44,20 +48,19 @@ public:
      */
     auto createFile(string fileLocation) -> FilesManager*;
     auto setCurrentFile(string fileLocation)-> FilesManager*;
-    auto setCurrentFile(File file) -> FilesManager*;
+    auto setCurrentFile(File* file) -> FilesManager*;
     auto save() -> FilesManager*;
     auto save(const string& key) -> FilesManager*;
+    auto save(const string &key, function<std::string(std::string v, std::string k)> algorithm) -> FilesManager*;
     auto close() -> FilesManager*;
     static auto split(const string &message, const string &reg) -> vector<string>;
-    /**
-     * Save and close.
-     */
-    auto flush() -> FilesManager*;
-    auto read() -> File;
-    auto read(const string& key) -> File;
+
+    auto read() -> File*;
+    auto read(const string& key) -> File*;
+    auto read(const string& key, function<std::string(std::string v, std::string k)> algorithm) -> File*;
     //todo metoda której jedynym zadaniem jest aktualizacja godziny w pliku
-    auto getCurrentFile() -> optional<File> * {
-        return &this->currentFile;
+    auto getCurrentFile() -> optional<File*> * {
+        return this->currentFile;
     }
 
 private:
@@ -76,7 +79,7 @@ private:
     auto writeToFile(const string &message) -> void {
         if (!this->isFileSet())
             throw logic_error("unable to write. File is not set.");
-        std::ofstream fileStream(this->currentFile.value().getLocation());
+        std::ofstream fileStream(this->currentFile->value()->getLocation());
         if (!fileStream)
             throw std::ios_base::failure("Failed to open the file for writing.");
         fileStream << message;
@@ -92,5 +95,7 @@ private:
     }
 
 
+public:
+    ~FilesManager();
 };
 

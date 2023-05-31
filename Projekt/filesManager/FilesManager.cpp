@@ -16,17 +16,18 @@ auto FilesManager::createFile(string fileLocation) -> FilesManager * {
     fileLocation += ".pass";
     if (this->isFileAlreadyExisting(fileLocation))
         throw ios_base::failure("File already exists on that location");
-
     File *file = new File(fileLocation);
     ofstream fileStream(file->getLocation());
-
     if (!fileStream) {
         delete file;
         throw ios_base::failure("Sailed to save file");
     }
 
     //success in creating a file.
-    this->currentFile.emplace(*file);
+    if (this->currentFile->has_value())
+        delete this->getCurrentFile()->value();
+    this->currentFile->reset();
+    this->getCurrentFile()->emplace(file);
 
     try {
         this->writeToFile(this->getCurrentDateTime());
@@ -41,68 +42,70 @@ auto FilesManager::createFile(string fileLocation) -> FilesManager * {
 
 auto FilesManager::setCurrentFile(string fileLocation) -> FilesManager * {
     fileLocation += ".pass";
-    File file = File(fileLocation);
+    File* file = new File(fileLocation);
     try {
         this->setCurrentFile(file);
     } catch (const std::ios_base::failure &ex) {
+        delete file;
         throw ex;
     }
     return this;
 }
 
-auto FilesManager::setCurrentFile(File file) -> FilesManager * {
-    if (!this->isFileAlreadyExisting(file.getLocation()))
+auto FilesManager::setCurrentFile(File* file) -> FilesManager * {
+    if (!this->isFileAlreadyExisting(file->getLocation())) {
+        delete file;
         throw ios_base::failure("No such file");
-    this->currentFile.emplace(file);
+    }
+    if (this->getCurrentFile()->has_value())
+        delete this->getCurrentFile()->value();
+    this->currentFile->reset();
+    this->currentFile->emplace(file);
     return this;
 }
 
 auto FilesManager::save() -> FilesManager * {
     if (!this->isFileSet())
         throw new logic_error("Cant save if file isnt chosen");
-    this->writeToFile(*this->getCurrentFile()->value().getRecords());
+    this->writeToFile(*this->getCurrentFile()->value()->getRecords());
     return this;
 }
-
 auto FilesManager::save(const string &key) -> FilesManager * {
+    this->save(key, myEncrypt);
+    return this;
+}
+auto FilesManager::save(const string &key, function<std::string(std::string v, std::string k)> algorithm) -> FilesManager* {
     if (!this->isFileSet())
         throw new logic_error("Cant save if file isnt chosen");
-    auto encryptedCopy = File(this->getCurrentFile()->value().getLocation());
-    for (auto unEncryptedRecord: *this->getCurrentFile()->value().getRecords()) {
-        auto encryptedRecord = VaultRecord(myEncrypt(unEncryptedRecord.getName(), key),
-                                           myEncrypt(unEncryptedRecord.getPassword(), key),
-                                           myEncrypt(unEncryptedRecord.getCategory(), key)
-        );
-
+    auto encryptedCopy = File(this->getCurrentFile()->value()->getLocation());
+    for (auto unEncryptedRecord: *this->getCurrentFile()->value()->getRecords()) {
+        auto encryptedRecord = VaultRecord(algorithm(unEncryptedRecord.getName(), key),
+                                           algorithm(unEncryptedRecord.getPassword(), key),
+                                           algorithm(unEncryptedRecord.getCategory(), key));
         if (unEncryptedRecord.getLogin().has_value())
-            encryptedRecord.setLogin(myEncrypt(unEncryptedRecord.getLogin().value(), key));
+            encryptedRecord.setLogin(algorithm(unEncryptedRecord.getLogin().value(), key));
         if (unEncryptedRecord.getWebAddress().has_value())
-            encryptedRecord.setWebAddress(myEncrypt(unEncryptedRecord.getWebAddress().value(), key));
+            encryptedRecord.setWebAddress(algorithm(unEncryptedRecord.getWebAddress().value(), key));
 
         encryptedCopy.getRecords()
                 ->push_back(encryptedRecord);
     }
-
     this->writeToFile(*encryptedCopy.getRecords());
-    return this;
 }
 
+
+
 auto FilesManager::close() -> FilesManager * {
+    if(this->getCurrentFile()->has_value())
+        delete this->getCurrentFile()->value();
     this->getCurrentFile()->reset();
     return this;
 }
 
-auto FilesManager::flush() -> FilesManager * {
-    this->save();
-    this->close();
-    return this;
-}
-
-
-auto FilesManager::read() -> File {
+auto FilesManager::read() -> File* {
     if (!this->isFileSet())
         throw logic_error("Set file before reading from file");
-    ifstream file(this->getCurrentFile()->value().getLocation());
+    ifstream file(this->getCurrentFile()->value()->getLocation());
     if (!file)
         throw std::ios_base::failure("Failed to open the file for reading");
 
@@ -124,32 +127,38 @@ auto FilesManager::read() -> File {
             currentRecord.setWebAddress(commaSeparatedValues[4]);
         this->getCurrentFile()
                 ->value()
-                .getRecords()
+                ->getRecords()
                 ->push_back(currentRecord);
     }
     return this->getCurrentFile()->value();
-
 }
 
-auto FilesManager::read(const string &key) -> File {
+auto FilesManager::read(const string &key) -> File* {
+    return this->read(key, myDecrypt);
+}
+auto FilesManager::read(const string &key, function<std::string(std::string, std::string)> algorithm) -> File* {
     if (!this->isFileSet())
         throw logic_error("Set file before reading from file");
 
     auto encryptedFile = this->read();
-    auto decryptedFile = File(this->getCurrentFile()->value().getLocation());
-    for(auto &encryptedRecord: *encryptedFile.getRecords()){
-        auto decryptedRecord = VaultRecord(myDecrypt(encryptedRecord.getName(), key),
-                                           myDecrypt(encryptedRecord.getPassword(), key),
-                                           myDecrypt(encryptedRecord.getCategory(), key));
+    auto decryptedFile = new File(this->getCurrentFile()->value()->getLocation());
+    for(auto &encryptedRecord: *encryptedFile->getRecords()){
+        auto decryptedRecord = VaultRecord(algorithm(encryptedRecord.getName(), key),
+                                           algorithm(encryptedRecord.getPassword(), key),
+                                           algorithm(encryptedRecord.getCategory(), key));
         if(encryptedRecord.getLogin().has_value())
-            decryptedRecord.setLogin(myDecrypt(encryptedRecord.getLogin().value(), key));
+            decryptedRecord.setLogin(algorithm(encryptedRecord.getLogin().value(), key));
         if(encryptedRecord.getWebAddress().has_value())
-            decryptedRecord.setWebAddress(myDecrypt(encryptedRecord.getWebAddress().value(), key));
-        decryptedFile.getRecords()->push_back(decryptedRecord);
+            decryptedRecord.setWebAddress(algorithm(encryptedRecord.getWebAddress().value(), key));
+        decryptedFile->getRecords()->push_back(decryptedRecord);
     }
+    if (this->getCurrentFile()->has_value())
+        delete this->getCurrentFile()->value();
+    this->getCurrentFile()->reset();
     this->setCurrentFile(decryptedFile);
     return decryptedFile;
 }
+
 
 auto FilesManager::split(const string &message, const string &reg) -> vector<string> {
     vector<string> elems;
@@ -163,6 +172,12 @@ auto FilesManager::split(const string &message, const string &reg) -> vector<str
         ++iter;
     }
     return elems;
+}
+
+FilesManager::~FilesManager() {
+    if (this->isFileSet())
+        delete this->getCurrentFile()->value();
+    this->currentFile->reset();
 }
 
 

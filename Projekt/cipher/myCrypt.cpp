@@ -1,5 +1,8 @@
 #include <string>
 #include <fmt/printf.h>
+#include <functional>
+
+
 #include "myCrypt.h"
 
 auto myEncrypt(std::string value, std::string key) -> std::string {
@@ -32,3 +35,11 @@ auto myDecrypt(std::string valueEncrypted, std::string key) -> std::string {
     return valueEncrypted;
 }
 
+
+auto foo(std::function<void(int)> abc) -> void {
+    abc(2);
+
+}
+auto printer(int toPrint) -> void {
+    fmt::print("{}", toPrint);
+}

@@ -4,11 +4,13 @@
 
 #include "File.h"
 
-File::File(const string &fileLocation) : fileLocation(fileLocation) {}
+File::File(const string &fileLocation) : fileLocation(fileLocation) {
+    this->records = new vector<VaultRecord>();
+}
 
 
-auto File::setRecords(const vector<VaultRecord> &records) -> File* {
-    File::records = records;
+auto File::setRecords(vector<VaultRecord>* records) -> File* {
+    this->records = records;
     return this;
 }
 
@@ -17,5 +19,10 @@ auto File::getLocation() -> string {
 }
 
 vector<VaultRecord> *File::getRecords() {
-    return &this->records;
+    return this->records;
+}
+
+File::~File() {
+    fmt::print("{}", "File has been destructed");
+    delete this->records;
 }

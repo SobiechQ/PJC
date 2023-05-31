@@ -7,7 +7,9 @@
 
 #include <string>
 
-auto myEncrypt(std::string value, std::string key) -> std::string;
-auto myDecrypt(std::string valueEncrypted, std::string key) -> std::string;
+    auto printer(int toPrint) -> void;
+    auto foo(std::function<void(int)> abc) -> void;
+    auto myEncrypt(std::string value, std::string key) -> std::string;
+    auto myDecrypt(std::string valueEncrypted, std::string key) -> std::string;
 
 #endif //PJC2_MYCRYPT_H

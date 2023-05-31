@@ -14,12 +14,14 @@ using namespace std;
 class File {
 private:
     const string fileLocation;
-    vector<VaultRecord> records;
+    vector<VaultRecord>* records;
 public:
     File(const string &fileLocation);
     auto getLocation() -> string;
     vector<VaultRecord>* getRecords();
-    auto setRecords(const vector<VaultRecord> &records) -> File*;
+    auto setRecords(vector<VaultRecord>* records) -> File*;
+
+    virtual ~File();
 };
 
 
