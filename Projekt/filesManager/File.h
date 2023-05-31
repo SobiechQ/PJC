@@ -8,7 +8,7 @@
 
 #include <string>
 #include <vector>
-#include "../VaultRecord.h"
+#include "../records/VaultRecord.h"
 
 using namespace std;
 class File {
