@@ -12,22 +12,33 @@ public:
 private:
     auto help() -> std::string;
     /*
-     * "\n\t help"
+    "\n\t help"
+           "\n\t create"
            "\n\t use"
+           "\n\t load"
+           "\n\t save"
            "\n\t show"
            "\n\t add"
-           "\n\t remove"
+           "\n\t delete"
            "\n\t alter"
-           "\n\t load"
-           "\n\t save";
+           "\n\t category_show"
+           "\n\t category_add"
+           "\n\t category_remove"
+           "\n\t using"
+           "\n\t clear"
+           "\n\t exit\n";
      */
+    auto create() -> void;
     auto use() -> void;
-//    auto show() -> void;
-//    auto add() -> void;
-//    auto remove() -> void;
-//    auto alter() -> void;
-//    auto load() -> void;
-//    auto save() -> void;
+    auto load() -> void;
+    auto show() -> void;
+    auto add() -> void;
+    auto remove() -> void;
+    auto alter() -> void;
+
+    auto currentFileUsing() -> void;
+    auto save() -> void;
+    auto printIndex() -> void;
 };
 
 

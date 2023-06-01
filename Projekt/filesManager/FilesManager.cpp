@@ -43,12 +43,7 @@ auto FilesManager::createFile(string fileLocation) -> FilesManager * {
 auto FilesManager::setCurrentFile(string fileLocation) -> FilesManager * {
     fileLocation += ".pass";
     File* file = new File(fileLocation);
-    try {
-        this->setCurrentFile(file);
-    } catch (const std::ios_base::failure &ex) {
-        delete file;
-        throw ex;
-    }
+    this->setCurrentFile(file);
     return this;
 }
 
@@ -108,9 +103,12 @@ auto FilesManager::read() -> File* {
     ifstream file(this->getCurrentFile()->value()->getLocation());
     if (!file)
         throw std::ios_base::failure("Failed to open the file for reading");
-
     string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     file.close();
+    this->getCurrentFile()
+        ->value()
+        ->getRecords()
+        ->clear();
     auto records = split(content, "\r\n");
     records.erase(records.begin());
     for (auto &record: records) {

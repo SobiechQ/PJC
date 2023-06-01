@@ -23,6 +23,5 @@ vector<VaultRecord> *File::getRecords() {
 }
 
 File::~File() {
-    fmt::print("{}", "File has been destructed");
     delete this->records;
 }
