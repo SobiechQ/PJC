@@ -35,6 +35,9 @@ private:
     auto add() -> void;
     auto remove() -> void;
     auto alter() -> void;
+    auto category_show() -> void;
+    auto category_add() -> void;
+    auto category_delete() -> void;
 
     auto currentFileUsing() -> void;
     auto save() -> void;

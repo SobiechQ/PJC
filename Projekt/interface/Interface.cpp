@@ -7,6 +7,7 @@
 #include "Interface.h"
 #include "../filesManager/FilesManager.h"
 #include <fmt/printf.h>
+#include "C:\Users\mikol\Documents\PJC\Projekt\category\CategoryManager.h"
 //#include "C:\Users\mikol\Documents\PJC\Projekt\filesManager\FilesManager.h"
 using namespace std;
 
@@ -34,11 +35,21 @@ auto Interface::run() -> void {
             this->currentFileUsing();
         if (command == "delete")
             this->remove();
+        if (command == "alter")
+            this->alter();
+        if (command == "close")
+            FilesManager::getInstance()->close();
+        if (command == "category_show")
+            this->category_show();
+        if (command == "category_add")
+            this->category_add();
+        if (command == "category_delete")
+            this->category_delete();
         if (command == "clear" || command == "cls")
             system("CLS");
     } while (command != "exit");
     FilesManager::getInstance()
-        ->close();
+            ->close();
 }
 
 auto Interface::help() -> std::string {
@@ -54,9 +65,10 @@ auto Interface::help() -> std::string {
            "\n\t alter"
            "\n\t category_show"
            "\n\t category_add"
-           "\n\t category_remove"
+           "\n\t category_delete"
            "\n\t using"
            "\n\t clear"
+           "\n\t close"
            "\n\t exit\n";
 }
 
@@ -240,6 +252,7 @@ auto Interface::remove() -> void {
             ->getRecords()
             ->empty()) {
         fmt::print("{}\n", "Cant remove from an empty file");
+        return;
     }
     this->printIndex();
     auto indexString = string();
@@ -254,7 +267,11 @@ auto Interface::remove() -> void {
         try {
             indexInt = stoi(indexString);
         } catch (std::invalid_argument ex) {
-            fmt::print("{}\n", "Provided indexString is not a proper number.");
+            fmt::print("{}\n", "Provided index is not a proper number.");
+            fmt::print("{}\n", ex.what());
+            properParsed = false;
+        } catch (std::out_of_range ex) {
+            fmt::print("{}\n", "Provided index is not a proper number.");
             fmt::print("{}\n", ex.what());
             properParsed = false;
         }
@@ -305,13 +322,17 @@ auto Interface::alter() -> void {
         try {
             indexInt = stoi(indexString);
         } catch (std::invalid_argument ex) {
-            fmt::print("{}\n", "Provided indexString is not a proper number.");
+            fmt::print("{}\n", "Provided index is not a proper number.");
+            fmt::print("{}\n", ex.what());
+            properParsed = false;
+        } catch (std::out_of_range ex) {
+            fmt::print("{}\n", "Provided index is not a proper number.");
             fmt::print("{}\n", ex.what());
             properParsed = false;
         }
         if (indexInt < 0 ||
             indexInt > FilesManager::getInstance()->getCurrentFile()->value()->getRecords()->size()) {
-            fmt::print("{}\n", "Provided indexString is out or range");
+            fmt::print("{}\n", "Provided indexS is out or range");
             properParsed = false;
         }
     } while (!properParsed);
@@ -324,16 +345,28 @@ auto Interface::alter() -> void {
                        "\n\tlogin"
                        "\n\taddress");
     cin >> command;
+    if (!(command == "name" || command == "password" || command == "category" || command == "login" ||
+          command == "address")) {
+        fmt::print("{}{}{}\n", "category (", command, ") does not exist");
+        fmt::print("{}\n", "");
+        return;
+    }
     fmt::print("{}{}\n", "enter new value to replace old ", command);
-    auto* record = &FilesManager::getInstance()->getCurrentFile()->value()
-            ->getRecords()[indexInt];
+    auto replaceValue = string();
+    cin >> replaceValue;
+    auto *record = &FilesManager::getInstance()->getCurrentFile()->value()
+            ->getRecords()->at(indexInt);
     if (command == "name")
-        record
-
-
-
-    fmt::print("{} {} {} \n", "Properly removed ", properParsed, " element.");
-
+        record->setName(replaceValue);
+    if (command == "password")
+        record->setPassword(replaceValue);
+    if (command == "category") //todo check catogory
+        record->setCategory(replaceValue);
+    if (command == "login")
+        record->setLogin(replaceValue);
+    if (command == "address")
+        record->setWebAddress(replaceValue);
+    fmt::print("{}\n", "value has been replaced");
 }
 
 auto Interface::printIndex() -> void {
@@ -356,6 +389,83 @@ auto Interface::printIndex() -> void {
     }
     for (int i = 0; i < 30; ++i)
         fmt::print("{}", '-');
-    fmt::print("{}\n", "");-
+    fmt::print("{}\n", "");
+}
+
+auto Interface::category_show() -> void {
+    CategoryManager::getInstance()->read();
+    fmt::print("{}\n", "Category show");
+    if (CategoryManager::getInstance()->getCategories()->empty()) {
+        fmt::print("{}\n", "No categories are now avaliable. Please create new categories with category_add command");
+        return;
+    }
+    fmt::print("{}\n", "Currently avaliable categories are:");
+    fmt::print("{}\n", "INDEX | CATEGORY");
+    for (int i = 0; i < 30; ++i)
+        fmt::print("{}", '-');
+    fmt::print("{}\n", "");
+    auto i = 0;
+    for (auto &a: *CategoryManager::getInstance()->getCategories())
+        fmt::print("| {} | {} |\n", i++, a);
+    for (int j = 0; j < 30; ++j)
+        fmt::print("{}", '-');
+    fmt::print("{}\n", "");
+
+
+}
+
+auto Interface::category_add() -> void {
+    CategoryManager::getInstance()->read();
+    fmt::print("\n{}\n", "- - - - - CATEGORY ADD - - - - -");
+    fmt::print("\t{}\n", "Enter new name of new category:");
+    auto category = string();
+    cin >> category;
+    if (std::find(CategoryManager::getInstance()->getCategories()->begin(),
+                  CategoryManager::getInstance()->getCategories()->end(), category) !=
+        CategoryManager::getInstance()->getCategories()->end()) {
+        fmt::print("\t{} {} {}\n", "category", category, "already exists.");
+        fmt::print("{}\n", "- - - - - - - - - - - - - - - - -");
+        return;
+    }
+    CategoryManager::getInstance()
+            ->getCategories()
+            ->push_back(category);
+    CategoryManager::getInstance()
+            ->save();
+    fmt::print("\t{}\n", "Provided category was saved.");
+    fmt::print("{}\n\n", "- - - - - - - - - - - - - - - - -");
+}
+
+auto Interface::category_delete() -> void {
+    fmt::print("\n{:-^32}\n", "CATEGORY DELETE");
+    CategoryManager::getInstance()
+        ->read();
+    if (CategoryManager::getInstance()
+            ->getCategories()->empty()) {
+        fmt::print("\t{}\n", "No categories found. Nothing to delete.");
+        fmt::print("{:-^32}\n\n", "");
+        return;
+    }
+    fmt::print("\t{}\n", "Please provide name of category to be deleted: ");
+    fmt::print("\t{:-^32}\n", "");
+    auto i = 0;
+    fmt::print("\t\t| {} | {} |\n", "INDEX", "CATEGORY");
+    for (auto &c: *CategoryManager::getInstance()->getCategories())
+        fmt::print("\t\t| {} | {} |\n", i++, c);
+    fmt::print("\t{:-^32}\n", "");
+    auto category = string();
+    cin >> category;
+    if (!(std::find(CategoryManager::getInstance()->getCategories()->begin(),
+                  CategoryManager::getInstance()->getCategories()->end(), category) !=
+        CategoryManager::getInstance()->getCategories()->end())) {
+        fmt::print("\t{} {} {}\n", "Category", category, "doesnt exist");
+        fmt::print("{:-^32}\n\n", "");
+        return;
+    }
+    auto* vec = CategoryManager::getInstance()->getCategories();
+    vec->erase(std::remove(vec->begin(), vec->end(), category), vec->end());
+    fmt::print("\t{}\n", "value has been removed.");
+    CategoryManager::getInstance()->save();
+    fmt::print("{:-^32}\n\n","");
 }
 

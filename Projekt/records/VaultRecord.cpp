@@ -61,3 +61,15 @@ const optional<std::string> &VaultRecord::getLogin() const {
 const optional<std::string> &VaultRecord::getWebAddress() const {
     return webAddress;
 }
+
+void VaultRecord::setName(const string &name) {
+    VaultRecord::name = name;
+}
+
+void VaultRecord::setPassword(const string &password) {
+    VaultRecord::password = password;
+}
+
+void VaultRecord::setCategory(const string &category) {
+    VaultRecord::category = category;
+}

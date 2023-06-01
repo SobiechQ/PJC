@@ -46,6 +46,12 @@ public:
     const optional<std::string> &getLogin() const;
 
     const optional<std::string> &getWebAddress() const;
+
+    void setName(const string &name);
+
+    void setPassword(const string &password);
+
+    void setCategory(const string &category);
 };
 #endif //PJC2_VAULTRECORD_H
 
