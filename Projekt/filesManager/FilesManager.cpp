@@ -89,6 +89,7 @@ FilesManager::save(const string &key, function<std::string(std::string v, std::s
                 ->push_back(encryptedRecord);
     }
     this->writeToFile(*encryptedCopy.getRecords());
+    return this;
 }
 
 
@@ -202,10 +203,3 @@ auto FilesManager::generatePass(int count, bool generateUpperAndLower, bool gene
     }
     return password;
 }
-
-
-
-
-
-
-

@@ -34,12 +34,3 @@ auto myDecrypt(std::string valueEncrypted, std::string key) -> std::string {
         valueEncrypted[i] -= key[i];
     return valueEncrypted;
 }
-
-
-auto foo(std::function<void(int)> abc) -> void {
-    abc(2);
-
-}
-auto printer(int toPrint) -> void {
-    fmt::print("{}", toPrint);
-}

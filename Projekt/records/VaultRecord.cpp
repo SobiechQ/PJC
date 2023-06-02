@@ -73,3 +73,4 @@ void VaultRecord::setPassword(const string &password) {
 void VaultRecord::setCategory(const string &category) {
     VaultRecord::category = category;
 }
+

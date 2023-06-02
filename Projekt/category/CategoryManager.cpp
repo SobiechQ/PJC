@@ -33,6 +33,7 @@ CategoryManager *CategoryManager::save() {
         throw std::ios_base::failure("Failed to open the file for writing.");
     fileStream << message;
     fileStream.close();
+    return this;
 }
 
 vector<std::string> *CategoryManager::getCategories() {
