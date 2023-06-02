@@ -13,11 +13,14 @@ using namespace std;
 
 auto Interface::run() -> void {
     auto command = string();
-    fmt::print("{}", "Password manager is running. Please insert command"
-                     "\n\t type help for command list: \n");
+    system("CLS");
+    fmt::print("\n{:░^50}\n", "");
+    fmt::print("{:░^50}\n", "PASSWORD MANAGER v1");
+    fmt::print("{:░^50}\n", "type help for more information");
+    fmt::print("{:░^50}\n", "");
     do {
         cin >> command;
-        if (command == "help")
+        if (command == "help_command")
             fmt::print("{}", this->help());
         if (command == "use")
             this->use();
@@ -37,8 +40,12 @@ auto Interface::run() -> void {
             this->remove();
         if (command == "alter")
             this->alter();
-        if (command == "close")
+        if (command == "close") {
+            fmt::print("\n{:-^32}\n", "CLOSE");
             FilesManager::getInstance()->close();
+            fmt::print("\t{}\n", "File has been closed.");
+            fmt::print("{:-^32}\n\n", "");
+        }
         if (command == "category_show")
             this->category_show();
         if (command == "category_add")
@@ -73,84 +80,84 @@ auto Interface::help() -> std::string {
            "\n\t exit\n";
 }
 auto Interface::use() -> void {
-    fmt::print("{}\n", "");
-    fmt::print("{}\n", "Use\nNow please enter a valid file location (excluding the .pass) of an encrypted file:");
+    fmt::print("\n{:-^32}\n", "USE");
+    fmt::print("\t{}\n","Please enter a valid file location (excluding the .pass) of an encrypted file:");
     auto location = string();
     cin >> location;
     try {
         FilesManager::getInstance()
                 ->setCurrentFile(location);
-        fmt::print("{}\n", "File has been properly set. Use load command to read data");
+        fmt::print("\t{}\n", "File has been properly set. Use load command to read data");
     } catch (std::ios_base::failure ex) {
-        fmt::print("{}\n", "Unable to load file. I/O error. Try again. \n"
+        fmt::print("\t{}\n", "Unable to load file. I/O error. Try again. \n"
                            "Reason: ");
-        fmt::print("{}\n", ex.what());
+        fmt::print("\t{}\n", ex.what());
     }
+    fmt::print("{:-^32}\n\n", "");
 }
 
 auto Interface::load() -> void {
-    fmt::print("{}\n", "");
+    fmt::print("\n{:-^32}\n", "LOAD");
     auto key = string();
-    fmt::print("{}", "Please provide a decryption key for given file: ");
+    if (!FilesManager::getInstance()
+            ->isFileSet()) {
+        fmt::print("\t{}\n", "File is not set. Please enter command use before loading data.");
+        fmt::print("{:-^32}\n\n", "");
+        return;
+    }
+    fmt::print("\t{}\n", "Please provide key for a given file: ");
     cin >> key;
-
-    fmt::print("{}", "Loading file... \n"); //todo add decrypt
     try {
         FilesManager::getInstance()
                 ->read(key);
-        fmt::print("{}\n", "Data loaded successfully!");
-    } catch (std::logic_error ex) {
-        fmt::print("{}\n", "command failure. File was not loaded");
-        fmt::print("{}\n", ex.what());
+        fmt::print("\t{}\n", "Data loaded successfully!");
     } catch (ios_base::failure ex) {
-        fmt::print("{}\n", "Input/output fail. File might be corrupted or missing. Reason:");
-        fmt::print("{}\n", ex.what());
+        fmt::print("\t{}\n", "Input/output fail. File might be corrupted or missing. Reason:");
+        fmt::print("\t{}\n", ex.what());
     }
+    fmt::print("{:-^32}\n\n", "");
 }
 
 auto Interface::create() -> void {
-    fmt::print("{}\n", "");
-    fmt::print("{}\n",
-               "Create.\nPlease prvide a full address to a location and name of the file to be created (without .pass)");
+    fmt::print("\n{:-^32}\n", "CREATE");
+    fmt::print("\t{}\n","Please prvide a full address to a location and name of the file to be created (without .pass)");
     auto location = string();
     cin >> location;
     try {
         FilesManager::getInstance()
                 ->createFile(location);
-        fmt::print("{}\n", "File was created and loaded.");
+        fmt::print("\t{}\n", "File was created and loaded.");
     } catch (ios_base::failure ex) {
-        fmt::print("{}\n", "unable to create file. Reason: ");
-        fmt::print("{}\n", ex.what());
+        fmt::print("\t{}\n", "unable to create file. Reason:");
+        fmt::print("\t{}\n", ex.what());
     }
+    fmt::print("{:-^32}\n\n", "");
 }
 
 auto Interface::add() -> void {
-    fmt::print("{}\n", "");
+    fmt::print("\n{:-^32}\n", "ADD");
     if (!FilesManager::getInstance()
             ->isFileSet()) {
-        fmt::print("{}\n",
-                   "cant add new record if file was not set! Please create new file using command create or use existign file using command use");
+        fmt::print("\t{}\n","Set file using command use before adding new records.");
+        fmt::print("{:-^32}\n\n", "");
         return;
     }
-
-
-    fmt::print("{}\n", "Add.\n Please provide data to be added to added to vault.");
-    fmt::print("{}\n", "Please enter name of new record: ");
+    fmt::print("\t{}\n", "Please enter name of new record:");
     auto name = string();
     cin >> name;
-    fmt::print("{}\n", "Please enter password of new record: ");
+    fmt::print("\t{}\n", "Please enter password of new record: ");
     auto password = string();
     cin >> password;
-    fmt::print("{}\n", "Please enter category of new record: "); //todo handle category
+    fmt::print("\t{}\n", "Please enter category of new record: "); //todo category manager
     auto category = string();
     cin >> category;
     auto record = VaultRecord(name, password, category);
-    fmt::print("{}\n", "If you want to store login please type it. If you want login to remain empty type: empty");
+    fmt::print("\t{}\n", "If you want to store login please type it. If you want login to remain empty type: empty");
     auto login = string();
     cin >> login;
     if (login != "empty")
         record.setLogin(login);
-    fmt::print("{}\n",
+    fmt::print("\t{}\n",
                "If you want to store web address please type it. If you want web address to remain empty type: empty");
     auto webAddress = string();
     cin >> webAddress;
@@ -161,25 +168,39 @@ auto Interface::add() -> void {
             ->value()
             ->getRecords()
             ->push_back(record);
-    fmt::print("{}\n", "Sucessfuly added new record. Remember to save unsaved changes using save command");
+    fmt::print("\t{}\n", "Sucessfuly added new record. Remember to save unsaved changes using save command");
+    fmt::print("{:-^32}\n\n", "");
 }
 
 auto Interface::save() -> void {
-    fmt::print("{}\n", "");
-    fmt::print("{}\n", "Save\nPlease provide encrtyption key to encrypt unsaved data.");
+    fmt::print("\n{:-^32}\n", "SAVE");
+    if (!FilesManager::getInstance()
+        ->isFileSet()){
+        fmt::print("\t{}\n","Set file with command use before saving");
+        fmt::print("{:-^32}\n\n", "");
+        return;
+    }
+    if (FilesManager::getInstance()
+            ->getCurrentFile()->value()->getRecords()->empty()){
+        fmt::print("\t{}\n","Terminated. No cached data to save");
+        fmt::print("{:-^32}\n\n", "");
+        return;
+    }
+    fmt::print("\t{}\n", "Please provide key to encrypt unsaved data.");
     auto key = string();
     cin >> key;
     try {
         FilesManager::getInstance()
                 ->save(key);
-        fmt::print("{}\n", "File saved properly");
+        fmt::print("\t{}\n", "File saved properly");
     } catch (logic_error ex) {
-        fmt::print("{}\n", "Terminated, this command cant be run now. File was not saved. Reason:");
-        fmt::print("{}\n", ex.what());
+        fmt::print("\t{}\n", "Terminated, this command cant be run now. File was not saved. Reason:");
+        fmt::print("\t{}\n", ex.what());
     } catch (std::ios_base::failure ex) {
-        fmt::print("{}\n", "Saving fail. File might be corrupted or no access to file. Reason:");
-        fmt::print("{}\n", ex.what());
+        fmt::print("\t{}\n", "Saving fail. File might be corrupted or no access to file. Reason:");
+        fmt::print("\t{}\n", ex.what());
     }
+    fmt::print("{:-^32}\n\n", "");
 
 }
 
@@ -187,8 +208,8 @@ auto Interface::show() -> void {
     fmt::print("\n{:-^32}\n", "SHOW");
     if (!FilesManager::getInstance()
             ->isFileSet()) {
-        fmt::print("\t{}\n",
-                   "File was not set. Please create new file using command create or use existign file using command use");
+        fmt::print("\t{}\n","File was not set. Please create new file using command create or use existign file using command use");
+        fmt::print("{:-^32}\n\n", "");
         return;
     }
     if (FilesManager::getInstance()
@@ -257,12 +278,12 @@ auto Interface::remove() -> void {
         try {
             indexInt = stoi(indexString);
         } catch (std::invalid_argument ex) {
-            fmt::print("\t{}\n", "Provided index is not a proper number.");
-//            fmt::print("\t{}\n", ex.what());
+            fmt::print("\t{}\n", "Provided index is not a proper number. Reason:");
+            fmt::print("\t{}\n", ex.what());
             properParsed = false;
         } catch (std::out_of_range ex) {
-            fmt::print("\t{}\n", "Provided index is not a proper number.");
-//            fmt::print("\t{}\n", ex.what());
+            fmt::print("\t{}\n", "Provided index is not a proper number. Reason:");
+            fmt::print("\t{}\n", ex.what());
             properParsed = false;
         }
         if (indexInt < 0 ||
@@ -317,28 +338,28 @@ auto Interface::alter() -> void {
         try {
             indexInt = stoi(indexString);
         } catch (std::invalid_argument ex) {
-            fmt::print("\t{}\n", "Provided index is not a proper number.");
-//            fmt::print("\t{}\n", ex.what());
+            fmt::print("\t{}\n", "Provided index is not a proper number. Reason:");
+            fmt::print("\t{}\n", ex.what());
             properParsed = false;
         } catch (std::out_of_range ex) {
-            fmt::print("\t{}\n", "Provided index is not a proper number.");
-//            fmt::print("\t{}\n", ex.what());
+            fmt::print("\t{}\n", "Provided index is not a proper number. Reason:");
+            fmt::print("\t{}\n", ex.what());
             properParsed = false;
         }
         if (indexInt < 0 ||
             indexInt >= FilesManager::getInstance()->getCurrentFile()->value()->getRecords()->size()) {
-            fmt::print("\t{}\n", "Provided indexS is out or range");
+            fmt::print("\t{}\n", "Provided index is out or range");
             properParsed = false;
         }
     } while (!properParsed);
     auto command = string();
     auto newValue = string();
-    fmt::print("{}\n", "enter what row you wish to change."
-                       "\n\t\tname"
-                       "\n\t\tpassword"
-                       "\n\t\tcategory"
-                       "\n\t\tlogin"
-                       "\n\t\taddress");
+    fmt::print("\t{}\n", "Please enter name of row you want to change");
+    fmt::print("\t\t{:-^16}\n", "name");
+    fmt::print("\t\t{:-^16}\n", "password");
+    fmt::print("\t\t{:-^16}\n", "category");
+    fmt::print("\t\t{:-^16}\n", "login");
+    fmt::print("\t\t{:-^16}\n", "address");
     cin >> command;
     if (!(command == "name" || command == "password" || command == "category" || command == "login" ||
           command == "address")) {
