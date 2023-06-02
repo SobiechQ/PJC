@@ -3,7 +3,7 @@
 //
 /**
 *@file myCrypt.h
-*@brief Definition file for the myCrypt library.
+*Definition file for the myCrypt library.
 *This file contains the declarations of functions for encryption and decryption using a key.
 */
 #ifndef PJC2_MYCRYPT_H
