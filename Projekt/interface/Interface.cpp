@@ -22,7 +22,7 @@ auto Interface::run() -> void {
     fmt::print("{:░^50}\n", "");
     do {
         cin >> command;
-        if (command == "help_command")
+        if (command == "help")
             fmt::print("{}", this->help());
         if (command == "use")
             this->use();
@@ -64,7 +64,7 @@ auto Interface::run() -> void {
 }
 
 auto Interface::help() -> std::string {
-    return "Command list. Type help for information about specific command"
+    return "Command list"
            "\n\t help"
            "\n\t create"
            "\n\t use"
@@ -74,7 +74,7 @@ auto Interface::help() -> std::string {
            "\n\t add"
            "\n\t delete"
            "\n\t alter"
-           "\n\t order" //todo!!
+           "\n\t order"
            "\n\t category_show"
            "\n\t category_add"
            "\n\t category_delete"
@@ -288,8 +288,13 @@ auto Interface::show() -> void {
             ->getCurrentFile()
             ->value()
             ->getRecords()) {
-        fmt::print("\t\t| {} | {} | {} | {} | {} | {} |\n", j++, record.getName(), record.getPassword(),
-                   record.getCategory(), record.getLogin().value_or(" --- "), record.getWebAddress().value_or(" --- "));
+        try {
+            fmt::print("\t\t| {} | {} | {} | {} | {} | {} |\n", j++, record.getName(), record.getPassword(),
+                       record.getCategory(), record.getLogin().value_or(" --- "),
+                       record.getWebAddress().value_or(" --- "));
+        } catch (std::runtime_error ex ){
+            cout <<"\t\t" + record.toCsv() << '\n';
+        }
     }
     fmt::print("\t{:-^32}\n", "");
     fmt::print("{:-^32}\n\n", "");
