@@ -38,6 +38,7 @@ private:
     auto category_show() -> void;
     auto category_add() -> void;
     auto category_delete() -> void;
+    auto order() -> void;
 
     auto currentFileUsing() -> void;
     auto save() -> void;

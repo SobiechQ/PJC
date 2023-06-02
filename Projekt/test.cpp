@@ -13,6 +13,8 @@
 
 int main() {
     using namespace std;
+    FilesManager::getInstance()->setCurrentFile("C:\\Users\\mikol\\Documents\\PJC\\Projekt\\passwd\\plenty");
+    FilesManager::getInstance()->read("Zaq1234%");
     Interface().run();
     return 0;
 }

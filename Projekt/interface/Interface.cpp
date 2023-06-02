@@ -6,13 +6,15 @@
 #include <iostream>
 #include "Interface.h"
 #include "../filesManager/FilesManager.h"
+#include "../category/CategoryManager.h"
+#include "../comparator/Comparator.h"
 #include <fmt/printf.h>
-#include "C:\Users\mikol\Documents\PJC\Projekt\category\CategoryManager.h"
-//#include "C:\Users\mikol\Documents\PJC\Projekt\filesManager\FilesManager.h"
+//#include "C:\Users\mikol\Documents\PJC\Projekt\category\CategoryManager.h"
 using namespace std;
 
 auto Interface::run() -> void {
     auto command = string();
+    CategoryManager::getInstance()->read();
     system("CLS");
     fmt::print("\n{:░^50}\n", "");
     fmt::print("{:░^50}\n", "PASSWORD MANAGER v1");
@@ -54,6 +56,8 @@ auto Interface::run() -> void {
             this->category_delete();
         if (command == "clear" || command == "cls")
             system("CLS");
+        if (command == "order")
+            this->order();
     } while (command != "exit");
     FilesManager::getInstance()
             ->close();
@@ -79,9 +83,10 @@ auto Interface::help() -> std::string {
            "\n\t close"
            "\n\t exit\n";
 }
+
 auto Interface::use() -> void {
     fmt::print("\n{:-^32}\n", "USE");
-    fmt::print("\t{}\n","Please enter a valid file location (excluding the .pass) of an encrypted file:");
+    fmt::print("\t{}\n", "Please enter a valid file location (excluding the .pass) of an encrypted file:");
     auto location = string();
     cin >> location;
     try {
@@ -90,7 +95,7 @@ auto Interface::use() -> void {
         fmt::print("\t{}\n", "File has been properly set. Use load command to read data");
     } catch (std::ios_base::failure ex) {
         fmt::print("\t{}\n", "Unable to load file. I/O error. Try again. \n"
-                           "Reason: ");
+                             "Reason: ");
         fmt::print("\t{}\n", ex.what());
     }
     fmt::print("{:-^32}\n\n", "");
@@ -120,7 +125,8 @@ auto Interface::load() -> void {
 
 auto Interface::create() -> void {
     fmt::print("\n{:-^32}\n", "CREATE");
-    fmt::print("\t{}\n","Please prvide a full address to a location and name of the file to be created (without .pass)");
+    fmt::print("\t{}\n",
+               "Please prvide a full address to a location and name of the file to be created (without .pass)");
     auto location = string();
     cin >> location;
     try {
@@ -138,19 +144,73 @@ auto Interface::add() -> void {
     fmt::print("\n{:-^32}\n", "ADD");
     if (!FilesManager::getInstance()
             ->isFileSet()) {
-        fmt::print("\t{}\n","Set file using command use before adding new records.");
+        fmt::print("\t{}\n", "Set file using command use before adding new records.");
+        fmt::print("{:-^32}\n\n", "");
+        return;
+    }
+    if (CategoryManager::getInstance()->getCategories()->empty()) {
+        fmt::print("\t{}\n", "No categories avaliable, provide categories with category_add command");
         fmt::print("{:-^32}\n\n", "");
         return;
     }
     fmt::print("\t{}\n", "Please enter name of new record:");
     auto name = string();
     cin >> name;
-    fmt::print("\t{}\n", "Please enter password of new record: ");
+    fmt::print("\t{}\n", "Please enter password of new record. If you want password to be automatically generated enter auto");
     auto password = string();
     cin >> password;
-    fmt::print("\t{}\n", "Please enter category of new record: "); //todo category manager
+    if (password == "auto"){
+        int passwordLength;
+        std::string includeUpperAndLowerStr;
+        std::string includeAlphanumericalCharsStr;
+
+        // Prompt the user for input
+        fmt::print("\t{}\n","Enter the number of letters: ");
+        std::cin >> passwordLength;
+
+        // Validate the password length
+        if (passwordLength <= 0) {
+            fmt::print("\t{}\n","Invalid password length. Please enter a positive number.\n");
+            fmt::print("{:-^32}\n", "");
+            return; // or handle the error in an appropriate way
+        }
+
+        fmt::print("\t{}\n","Generate uppercase and lowercase letters? (yes/no): ");
+        std::cin >> includeUpperAndLowerStr;
+
+        fmt::print("\t{}\n","Generate alphanumeric characters? (yes/no): ");
+        std::cin >> includeAlphanumericalCharsStr;
+
+        bool includeUpperAndLower = (includeUpperAndLowerStr == "yes");
+        bool includeAlphanumericalChars = (includeAlphanumericalCharsStr == "yes");
+
+        // Generate the password based on user input
+        std::string passwordGen = FilesManager::getInstance()->generatePass( passwordLength, includeUpperAndLower, includeAlphanumericalChars);
+
+        // Assign the generated password to the 'password' variable
+        password = passwordGen;
+    }
+    const auto& records = FilesManager::getInstance()->getCurrentFile()->value()->getRecords();
+    bool passwordExists = std::any_of(records->begin(), records->end(), [&password](const VaultRecord& record) {
+        return record.getPassword() == password;
+    });
+    if (passwordExists)
+        fmt::print("\t{}\n","WARNING! Provided password was alredy used before!");
+
+    fmt::print("\t{}\n", "Please enter category of new record: ");
+    fmt::print("{}\n", "Avaliable categories are:");
+    for (auto cat: *CategoryManager::getInstance()->getCategories())
+        fmt::print("\t\t{:-^16}\n", cat);
     auto category = string();
     cin >> category;
+    if (!(std::find(CategoryManager::getInstance()->getCategories()->begin(),
+                    CategoryManager::getInstance()->getCategories()->end(), category) !=
+          CategoryManager::getInstance()->getCategories()->end())) {
+        fmt::print("\t{} {} {}\n", "Category", category,
+                   "is not avaliable in list of categories. Add it by using command category_add");
+        fmt::print("{:-^32}\n\n", "");
+        return;
+    }
     auto record = VaultRecord(name, password, category);
     fmt::print("\t{}\n", "If you want to store login please type it. If you want login to remain empty type: empty");
     auto login = string();
@@ -175,14 +235,14 @@ auto Interface::add() -> void {
 auto Interface::save() -> void {
     fmt::print("\n{:-^32}\n", "SAVE");
     if (!FilesManager::getInstance()
-        ->isFileSet()){
-        fmt::print("\t{}\n","Set file with command use before saving");
+            ->isFileSet()) {
+        fmt::print("\t{}\n", "Set file with command use before saving");
         fmt::print("{:-^32}\n\n", "");
         return;
     }
     if (FilesManager::getInstance()
-            ->getCurrentFile()->value()->getRecords()->empty()){
-        fmt::print("\t{}\n","Terminated. No cached data to save");
+            ->getCurrentFile()->value()->getRecords()->empty()) {
+        fmt::print("\t{}\n", "Terminated. No cached data to save");
         fmt::print("{:-^32}\n\n", "");
         return;
     }
@@ -201,14 +261,14 @@ auto Interface::save() -> void {
         fmt::print("\t{}\n", ex.what());
     }
     fmt::print("{:-^32}\n\n", "");
-
 }
 
 auto Interface::show() -> void {
     fmt::print("\n{:-^32}\n", "SHOW");
     if (!FilesManager::getInstance()
             ->isFileSet()) {
-        fmt::print("\t{}\n","File was not set. Please create new file using command create or use existign file using command use");
+        fmt::print("\t{}\n",
+                   "File was not set. Please create new file using command create or use existign file using command use");
         fmt::print("{:-^32}\n\n", "");
         return;
     }
@@ -228,7 +288,8 @@ auto Interface::show() -> void {
             ->getCurrentFile()
             ->value()
             ->getRecords()) {
-        fmt::print("\t\t| {} | {} | {} | {} | {} | {} |\n", j++, record.getName(), record.getCategory(), record.getPassword(), record.getLogin().value_or(" --- "), record.getWebAddress().value_or(" --- "));
+        fmt::print("\t\t| {} | {} | {} | {} | {} | {} |\n", j++, record.getName(), record.getPassword(),
+                   record.getCategory(), record.getLogin().value_or(" --- "), record.getWebAddress().value_or(" --- "));
     }
     fmt::print("\t{:-^32}\n", "");
     fmt::print("{:-^32}\n\n", "");
@@ -315,6 +376,13 @@ auto Interface::alter() -> void {
         return;
     }
     if (FilesManager::getInstance()
+            ->getCurrentFile()->value()->getRecords()->empty()) {
+        fmt::print("\t{}\n",
+                   "File was set but no data is loaded. Use command load to load data from file");
+        fmt::print("{:-^32}\n\n", "");
+        return;
+    }
+    if (FilesManager::getInstance()
             ->getCurrentFile()
             ->value()
             ->getRecords()
@@ -322,7 +390,7 @@ auto Interface::alter() -> void {
         fmt::print("\t{}\n", "File is empty. Noting to alter. Load data to alter using command load.");
         fmt::print("{:-^32}\n\n", "");
     }
-    fmt::print("\t{}\n","Currently avaliable records are: ");
+    fmt::print("\t{}\n", "Currently avaliable records are: ");
     this->printIndex();
     auto indexString = string();
     bool properParsed;
@@ -369,14 +437,27 @@ auto Interface::alter() -> void {
     }
     fmt::print("\t{}{}\n", "enter new value to replace old ", command);
     auto replaceValue = string();
+    if (command == "category") {
+        fmt::print("{}\n", "Avaliable categories are:");
+        for (auto cat: *CategoryManager::getInstance()->getCategories())
+            fmt::print("\t\t{:-^16}\n", cat);
+    }
     cin >> replaceValue;
+    if (command=="category" && !(std::find(CategoryManager::getInstance()->getCategories()->begin(),
+                    CategoryManager::getInstance()->getCategories()->end(), replaceValue) !=
+          CategoryManager::getInstance()->getCategories()->end())) {
+        fmt::print("\t{} {} {}\n", "Category", replaceValue,
+                   "is not avaliable in list of categories. Add it by using command category_add");
+        fmt::print("{:-^32}\n\n", "");
+        return;
+    }
     auto *record = &FilesManager::getInstance()->getCurrentFile()->value()
             ->getRecords()->at(indexInt);
     if (command == "name")
         record->setName(replaceValue);
     if (command == "password")
         record->setPassword(replaceValue);
-    if (command == "category") //todo check catogory
+    if (command == "category")
         record->setCategory(replaceValue);
     if (command == "login")
         record->setLogin(replaceValue);
@@ -400,7 +481,8 @@ auto Interface::printIndex() -> void {
             ->getCurrentFile()
             ->value()
             ->getRecords()) {
-        fmt::print("\t\t| {} | {} | {} | {} | {} | {} |\n", j++, record.getName(), record.getCategory(), " *** ", record.getLogin().value_or(" --- "), record.getWebAddress().value_or(" --- "));
+        fmt::print("\t\t| {} | {} | {} | {} | {} | {} |\n", j++, record.getName(), " *** ", record.getCategory(),
+                   record.getLogin().value_or(" --- "), record.getWebAddress().value_or(" --- "));
     }
     fmt::print("\t{:-^32}\n", "");
 }
@@ -476,5 +558,52 @@ auto Interface::category_delete() -> void {
     fmt::print("\t{} {} {}\n", "value", category, "has been removed.");
     CategoryManager::getInstance()->save();
     fmt::print("{:-^32}\n\n", "");
+}
+
+auto Interface::order() -> void {
+    fmt::print("\n{:-^32}\n", "ORDER");
+    if (!FilesManager::getInstance()->isFileSet()) {
+        fmt::print("\t{}\n", "File is not set. nothing to order");
+        fmt::print("{:-^32}\n\n", "");
+        return;
+    }
+    if (FilesManager::getInstance()->getCurrentFile()->value()->getRecords()->empty()) {
+        fmt::print("\t{}\n", "File is set but no data is cashed. Use command load.");
+        fmt::print("{:-^32}\n\n", "");
+        return;
+    }
+    fmt::print("\t{}\n", "Enter first category to order by:");
+    fmt::print("\t\t{:-^16}\n", "name");
+    fmt::print("\t\t{:-^16}\n", "password");
+    fmt::print("\t\t{:-^16}\n", "category");
+    fmt::print("\t\t{:-^16}\n", "login");
+    fmt::print("\t\t{:-^16}\n", "webAddress");
+    auto commandFirst = string();
+    cin >> commandFirst;
+    if (!(commandFirst == "name" || commandFirst == "password" || commandFirst == "category" ||
+          commandFirst == "login" || commandFirst == "webAddress")) {
+        fmt::print("\t{}\n", "No such category");
+        fmt::print("{:-^32}\n", "");
+        return;
+    }
+    auto comparator = Comparator(commandFirst);
+    fmt::print("\t{}\n", "Provide second caregory to order by. Enter empty for no additional ordering");
+    auto commandSecond = string();
+    cin >> commandSecond;
+
+    if (commandSecond != "empty" &&
+        ((commandFirst == "name" || commandFirst == "password" || commandFirst == "category" ||
+          commandFirst == "login" || commandFirst == "password"))) {
+        comparator.setSecondary(commandSecond);
+    }
+    auto *vec = FilesManager::getInstance()->getCurrentFile()->value()->getRecords();
+    auto comparatorPredicate = [&comparator](const VaultRecord &record1, const VaultRecord &record2) {
+        return comparator.compare(record1, record2);
+    };
+    std::sort(vec->begin(), vec->end(), comparatorPredicate);
+    fmt::print("\t{}\n", "Records have been sorted. Use command show to display them.");
+    fmt::print("{:-^32}\n", "");
+
+
 }
 

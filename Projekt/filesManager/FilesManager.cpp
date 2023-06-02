@@ -42,12 +42,12 @@ auto FilesManager::createFile(string fileLocation) -> FilesManager * {
 
 auto FilesManager::setCurrentFile(string fileLocation) -> FilesManager * {
     fileLocation += ".pass";
-    File* file = new File(fileLocation);
+    File *file = new File(fileLocation);
     this->setCurrentFile(file);
     return this;
 }
 
-auto FilesManager::setCurrentFile(File* file) -> FilesManager * {
+auto FilesManager::setCurrentFile(File *file) -> FilesManager * {
     if (!this->isFileAlreadyExisting(file->getLocation())) {
         delete file;
         throw ios_base::failure("No such file");
@@ -65,11 +65,14 @@ auto FilesManager::save() -> FilesManager * {
     this->writeToFile(*this->getCurrentFile()->value()->getRecords());
     return this;
 }
+
 auto FilesManager::save(const string &key) -> FilesManager * {
     this->save(key, myEncrypt);
     return this;
 }
-auto FilesManager::save(const string &key, function<std::string(std::string v, std::string k)> algorithm) -> FilesManager* {
+
+auto
+FilesManager::save(const string &key, function<std::string(std::string v, std::string k)> algorithm) -> FilesManager * {
     if (!this->isFileSet())
         throw new logic_error("Cant save if file isnt chosen");
     auto encryptedCopy = File(this->getCurrentFile()->value()->getLocation());
@@ -89,15 +92,14 @@ auto FilesManager::save(const string &key, function<std::string(std::string v, s
 }
 
 
-
 auto FilesManager::close() -> FilesManager * {
-    if(this->getCurrentFile()->has_value())
+    if (this->getCurrentFile()->has_value())
         delete this->getCurrentFile()->value();
     this->getCurrentFile()->reset();
     return this;
 }
 
-auto FilesManager::read() -> File* {
+auto FilesManager::read() -> File * {
     if (!this->isFileSet())
         throw logic_error("Set file before reading from file");
     ifstream file(this->getCurrentFile()->value()->getLocation());
@@ -106,9 +108,9 @@ auto FilesManager::read() -> File* {
     string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     file.close();
     this->getCurrentFile()
-        ->value()
-        ->getRecords()
-        ->clear();
+            ->value()
+            ->getRecords()
+            ->clear();
     auto records = split(content, "\r\n");
     records.erase(records.begin());
     for (auto &record: records) {
@@ -132,22 +134,23 @@ auto FilesManager::read() -> File* {
     return this->getCurrentFile()->value();
 }
 
-auto FilesManager::read(const string &key) -> File* {
+auto FilesManager::read(const string &key) -> File * {
     return this->read(key, myDecrypt);
 }
-auto FilesManager::read(const string &key, function<std::string(std::string, std::string)> algorithm) -> File* {
+
+auto FilesManager::read(const string &key, function<std::string(std::string, std::string)> algorithm) -> File * {
     if (!this->isFileSet())
         throw logic_error("Set file before reading from file");
 
     auto encryptedFile = this->read();
     auto decryptedFile = new File(this->getCurrentFile()->value()->getLocation());
-    for(auto &encryptedRecord: *encryptedFile->getRecords()){
+    for (auto &encryptedRecord: *encryptedFile->getRecords()) {
         auto decryptedRecord = VaultRecord(algorithm(encryptedRecord.getName(), key),
                                            algorithm(encryptedRecord.getPassword(), key),
                                            algorithm(encryptedRecord.getCategory(), key));
-        if(encryptedRecord.getLogin().has_value())
+        if (encryptedRecord.getLogin().has_value())
             decryptedRecord.setLogin(algorithm(encryptedRecord.getLogin().value(), key));
-        if(encryptedRecord.getWebAddress().has_value())
+        if (encryptedRecord.getWebAddress().has_value())
             decryptedRecord.setWebAddress(algorithm(encryptedRecord.getWebAddress().value(), key));
         decryptedFile->getRecords()->push_back(decryptedRecord);
     }
@@ -178,6 +181,29 @@ FilesManager::~FilesManager() {
         delete this->getCurrentFile()->value();
     this->currentFile->reset();
 }
+
+auto FilesManager::generatePass(int count, bool generateUpperAndLower, bool generateAlphanumericalChars) -> string {
+    std::string password;
+
+    std::string uppercaseLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    std::string lowercaseLetters = "abcdefghijklmnopqrstuvwxyz";
+    std::string specialChars = "!@#$%^&*()";
+    std::string alphanumericalChars = "0123456789";
+
+    std::string charSet = alphanumericalChars;
+    charSet += lowercaseLetters;
+    if (generateUpperAndLower)
+        charSet += uppercaseLetters;
+    if (generateAlphanumericalChars)
+        charSet += specialChars;
+    for (int i = 0; i < count; ++i) {
+        int randomIndex = std::rand() % charSet.size();
+        password += charSet[randomIndex];
+    }
+    return password;
+}
+
+
 
 
 

@@ -12,18 +12,19 @@ Comparator::Comparator(const string &primaryComparingBy) : primaryComparingBy(pr
 auto Comparator::compare(VaultRecord v1, VaultRecord v2) -> bool {
     if (this->primaryComparingBy == "name")
         if(v1.getName()!=v2.getName())
-            return v1.getName().compare(v2.getName());
+            return v1.getName().compare(v2.getName()) < 0;
     if (this->primaryComparingBy == "password")
         if (v1.getPassword() != v2.getPassword())
-            return v1.getPassword().compare(v2.getPassword());
+            return v1.getPassword().compare(v2.getPassword()) < 0;
     if (this->primaryComparingBy == "category")
         if (v1.getCategory() != v2.getCategory())
-            return v1.getCategory().compare(v2.getCategory());
+            return v1.getCategory().compare(v2.getCategory()) < 0;
 
     if (this->primaryComparingBy == "login") {
         //both have value
-        if(v1.getLogin().has_value() && v2.getLogin().has_value())
-            return v1.getLogin().value().compare(v2.getLogin().value());
+        if(v1.getLogin().has_value() && v2.getLogin().has_value() &&
+            v1.getLogin().value()!=v2.getLogin().value())
+            return v1.getLogin().value().compare(v2.getLogin().value()) < 0;
         //only v1 has value
         if(v1.getLogin().has_value() && !v2.getLogin().has_value())
             return true; // those that have value go higher
@@ -34,8 +35,9 @@ auto Comparator::compare(VaultRecord v1, VaultRecord v2) -> bool {
     
     if (this->primaryComparingBy == "webAddress") {
         //both have value
-        if(v1.getWebAddress().has_value() && v2.getWebAddress().has_value())
-            return v1.getWebAddress().value().compare(v2.getWebAddress().value());
+        if(v1.getWebAddress().has_value() && v2.getWebAddress().has_value() &&
+                v1.getWebAddress().value() != v2.getWebAddress().value())
+            return v1.getWebAddress().value().compare(v2.getWebAddress().value())  < 0;
         //only v1 has value
         if(v1.getWebAddress().has_value() && !v2.getWebAddress().has_value())
             return true; // those that have value go higher
@@ -58,18 +60,18 @@ auto Comparator::compareSecondary(VaultRecord v1, VaultRecord v2) -> bool {
 
     if (this->secondaryComparingBy.value() == "name")
         if(v1.getName()!=v2.getName())
-            return v1.getName().compare(v2.getName());
+            return v1.getName().compare(v2.getName())  < 0;
     if (this->secondaryComparingBy.value() == "password")
         if (v1.getPassword() != v2.getPassword())
-            return v1.getPassword().compare(v2.getPassword());
+            return v1.getPassword().compare(v2.getPassword())  < 0;
     if (this->secondaryComparingBy.value() == "category")
         if (v1.getCategory() != v2.getCategory())
-            return v1.getCategory().compare(v2.getCategory());
+            return v1.getCategory().compare(v2.getCategory())  < 0;
 
     if (this->secondaryComparingBy.value() == "login") {
         //both have value
         if(v1.getLogin().has_value() && v2.getLogin().has_value())
-            return v1.getLogin().value().compare(v2.getLogin().value());
+            return v1.getLogin().value().compare(v2.getLogin().value())  < 0;
         //only v1 has value
         if(v1.getLogin().has_value() && !v2.getLogin().has_value())
             return true; // those that have value go higher
@@ -80,7 +82,7 @@ auto Comparator::compareSecondary(VaultRecord v1, VaultRecord v2) -> bool {
     if (this->secondaryComparingBy.value() == "webAddress") {
         //both have value
         if(v1.getWebAddress().has_value() && v2.getWebAddress().has_value())
-            return v1.getWebAddress().value().compare(v2.getWebAddress().value());
+            return v1.getWebAddress().value().compare(v2.getWebAddress().value())  < 0;
         //only v1 has value
         if(v1.getWebAddress().has_value() && !v2.getWebAddress().has_value())
             return true; // those that have value go higher

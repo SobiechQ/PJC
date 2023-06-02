@@ -53,13 +53,13 @@ public:
     auto save() -> FilesManager*;
     auto save(const string& key) -> FilesManager*;
     auto save(const string &key, std::function<std::string(std::string v, std::string k)> algorithm) -> FilesManager*;
+    auto generatePass(int count, bool generateUpperAndLower, bool generateAlphanumericalChars) -> string;
     auto close() -> FilesManager*;
     static auto split(const string &message, const string &reg) -> vector<string>;
 
     auto read() -> File*;
     auto read(const string& key) -> File*;
     auto read(const string& key, std::function<std::string(std::string v, std::string k)> algorithm) -> File*;
-    //todo metoda której jedynym zadaniem jest aktualizacja godziny w pliku
     auto getCurrentFile() -> optional<File*> * {
         return this->currentFile;
     }
